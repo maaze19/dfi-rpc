@@ -1,3 +1,22 @@
+# dfi-rpc
+
+This community project aims to provide a .NET Core library to wrap all RPC commands from [DeFiChain](https://github.com/DeFiCh/ain) for better automization of tasks which makes it neccessary to communicate with a fullnode or defid.
+
+**The code should not be used in production environment.**
+
+Feel free to help getting things done by opening pull requests or to motivate me by sending some DFI: [dVTgDdb5J8cBTQL66Nt91jkYdrC2ghFsv2](https://explorer.defichain.com/#/DFI/mainnet/address/dVTgDdb5J8cBTQL66Nt91jkYdrC2ghFsv2)
+
+## Usage 
+```csharp 
+IDeFiService coinService = new DeFiService("http://127.0.0.1:8555", "rpc_username", "rpc_password", null);
+//Start a local full node before trying to call any rpc command
+coinService.ListPoolPairs();
+```
+
+## Status
+This table gives info about all implemented RPC-commands which can be actually be used and which ones have to be implemented. 
+
+Furthermore no tests are written since now.
 | Method                                                                                                                                                                                   | Implemented | Tested | Notes                                                                                                                                                                      |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Accounts**                                                                                                                                                                             |
