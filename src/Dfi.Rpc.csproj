@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyVersion>0.0.1.0</AssemblyVersion>
+    <FileVersion>0.0.1.0</FileVersion>
+    <Version>0.0.1</Version>
+    <PackageProjectUrl>https://github.com/maaze19/dfi-rpc</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/maaze19/dfi-rpc.git</RepositoryUrl>
+    <PackageReleaseNotes>First release as an early beta</PackageReleaseNotes>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>This community project aims to provide a .NET Core library to wrap all RPC commands from DeFiChain for better automization of tasks which makes it neccessary to communicate with a fullnode or defid.</Description>
   </PropertyGroup>
 
   <ItemGroup>
