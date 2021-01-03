@@ -13,8 +13,8 @@ namespace Dfi.Rpc.Connector
     public sealed class RpcConnector : IRpcConnector
     {
         private readonly string _daemonUrl;
-        private readonly string _rpcUsername;
-        private readonly string _rpcPassword;
+        private readonly string _rpcUsername = null;
+        private readonly string _rpcPassword = null;
         private readonly short _rpcRequestTimeoutInSeconds;
 
         public RpcConnector(string daemonUrl, string rpcUsername, string rpcPassword, short rpcRequestTimeoutInSeconds = 1)
@@ -24,7 +24,6 @@ namespace Dfi.Rpc.Connector
             _rpcPassword = rpcPassword;
             _rpcRequestTimeoutInSeconds = rpcRequestTimeoutInSeconds;
         }
-
         public T MakeRequest<T>(IRpcRequest rpcMethod)
         {
             var jsonRpcRequest = new JsonRpcRequest(1, rpcMethod.Name, rpcMethod.GetParameters());
@@ -76,7 +75,7 @@ namespace Dfi.Rpc.Connector
             }
             catch (WebException webException)
             {
-#region RPC Internal Server Error (with an Error Code)
+                #region RPC Internal Server Error (with an Error Code)
 
                 var webResponse = webException.Response as HttpWebResponse;
 
@@ -122,16 +121,16 @@ namespace Dfi.Rpc.Connector
                     }
                 }
 
-#endregion
+                #endregion
 
-#region RPC Time-Out
+                #region RPC Time-Out
 
                 if (webException.Message == "The operation has timed out")
                 {
                     throw new RpcRequestTimeoutException(webException.Message);
                 }
 
-#endregion
+                #endregion
 
                 throw new RpcException("An unknown web exception occured while trying to read the JSON response", webException);
             }

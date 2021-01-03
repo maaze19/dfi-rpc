@@ -1,7 +1,9 @@
 ﻿using Dfi.Rpc.Responses;
 using Dfi.Rpc.Specifications;
+using Dfi.Rpc.Specifications.RpcRequests;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 
 namespace Dfi.Rpc
@@ -11,6 +13,13 @@ namespace Dfi.Rpc
         public const string OWNER_MINE = "mine";
         public const string OWNER_ALL = "all";
         Balances GetBalances();
+        decimal GetBalance(int minconf, bool includeWatchOnly, bool avoidReuse);
+        BalancesWithTokens GetBalanceWithTokens(int minconf, bool includeWatchOnly, bool avoidReuse);
+        BalancesWithTokens GetTokenBalances(Pagination pagination = null, bool symbolLookup = false);
+        Accounts ListAccounts(Pagination pagination = null, bool isMineOnly = true);
+        BalancesWithTokens GetAccount(string owner, Pagination pagination = null);
+        //TODO: Parameter inputs is missing.
+        string AccountToUtxos(string from, ToAddress to);
         bool IsTestnet();
         bool IsMainNet();
 
@@ -54,6 +63,27 @@ namespace Dfi.Rpc
         GovernanceLpSplitsResponse GetGovLpSplits();
         MempoolInfo GetMempoolInfo();
         void SaveMempool();
+        #endregion
+
+        #region Network
+        bool AddNode(string node, AddNodeCommands command);
+        void ClearBanned();
+        /// <summary>
+        /// Immediately disconnects from the specified peer node.
+        /// </summary>
+        /// <param name="node">Can be the ip address / port or the node id.</param>
+        void DisconnectNode(int nodeId);
+        void DisconnectNode(string address);
+        void DisconnectNode(IPEndPoint endPoint);
+        List<string> ListBanned();
+        PeerInfos GetPeerInfo();
+        /// <summary>
+        /// Returns information about the given added node, or all added nodes (note that onetry addnodes are not listed here)
+        /// </summary>
+        /// <param name="node">If provided, return information about this specific node, otherwise all nodes are returned.</param>
+        /// <returns></returns>
+        NodeInfos GetAddedNodeInfo(string node = "all");
+        int GetConnectionCount();
         #endregion
     }
 }

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Text;
 using Dfi.Rpc.Connector;
 using Dfi.Rpc.Responses;
@@ -27,7 +30,31 @@ namespace Dfi.Rpc
             _rpcConnector = new RpcConnector(daemonUrl, rpcUsername, rpcPassword, rpcRequestTimeoutInSeconds);
             _walletPassword = walletPassword;
         }
-
+        public DeFiService(string daemonUrl, string cookiePath, string walletPassword, short rpcRequestTimeoutInSeconds)
+        {
+            if (GetUserCredentialsFromCookie(cookiePath, out string username, out string password))
+            {
+                _rpcConnector = new RpcConnector(daemonUrl, username, password, rpcRequestTimeoutInSeconds);
+                _walletPassword = walletPassword;
+            }
+            else throw new Exception("Cookie file not found.");
+        }
+        private static bool GetUserCredentialsFromCookie(string path, out string username, out string password)
+        {
+            if (File.Exists(path))
+            {
+                string content = File.ReadAllText(path);
+                string[] kvpSplit = content.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                if (kvpSplit.Length == 2)
+                {
+                    username = kvpSplit[0];
+                    password = kvpSplit[1];
+                    return true;
+                }
+            }
+            username = password = null;
+            return false;
+        }
 
         //public string SendToAddress(string bitcoinAddress, decimal amount, string comment, string commentTo, bool subtractFeeFromAmount, bool allowReplaceByFee)
         //{
@@ -69,10 +96,10 @@ namespace Dfi.Rpc
         public PoolShares ListPoolShares(int start, bool includingStart, int limit, bool isMine)
             => _rpcConnector.MakeRequest<PoolShares>(new ListPoolSharesRpcRequest(start, includingStart, limit, isMine));
 
-        public string AccountToAccount(string from, ToAddress to) => 
-            _rpcConnector.MakeRequest<string>(new AccounToAccountRpcRequest(from, to));
+        public string AccountToAccount(string from, ToAddress to) =>
+            _rpcConnector.MakeRequest<string>(new AccountToAccountRpcRequest(from, to));
 
-        public int AccountHistoryCount(string owner = IDeFiService.OWNER_MINE, bool noRewards = false, string token = null) 
+        public int AccountHistoryCount(string owner = IDeFiService.OWNER_MINE, bool noRewards = false, string token = null)
             => _rpcConnector.MakeRequest<int>(new AccountHistoryCountRpcRequest(owner, noRewards, token));
 
         #region Blockchain
@@ -104,6 +131,45 @@ namespace Dfi.Rpc
         public MempoolInfo GetMempoolInfo() => _rpcConnector.MakeRequest<MempoolInfo>("getmempoolinfo");
 
         public void SaveMempool() => _rpcConnector.MakeRequest<object>("savemempool");
+
+        public bool AddNode(string node, AddNodeCommands command) => _rpcConnector.MakeRequest<object>("addnode", node, command.ToString().ToLower()) == null;
+
+        public void ClearBanned() => _rpcConnector.MakeRequest<object>("clearbanned");
+
+        public void DisconnectNode(string node) => _rpcConnector.MakeRequest<object>(new DisconnectNodeRpcRequest(node));
+        public void DisconnectNode(int nodeId) => _rpcConnector.MakeRequest<object>(new DisconnectNodeRpcRequest(nodeId));
+
+        public void DisconnectNode(IPEndPoint endPoint) => _rpcConnector.MakeRequest<object>(new DisconnectNodeRpcRequest(endPoint));
+
+        public PeerInfos GetPeerInfo() => _rpcConnector.MakeRequest<PeerInfos>("getpeerinfo");
+
+        public List<string> ListBanned() => _rpcConnector.MakeRequest<List<string>>("listbanned");
+
+        public NodeInfos GetAddedNodeInfo(string node = "all") => _rpcConnector.MakeRequest<NodeInfos>("getaddednodeinfo");
+
+        public int GetConnectionCount() => _rpcConnector.MakeRequest<int>("getconnectioncount");
+
+
+
         #endregion
+        private T GetBalance<T>(int minconf, bool includeWatchOnly, bool avoidReuse, bool withTokens)
+            => _rpcConnector.MakeRequest<T>("getbalance", "*", minconf, includeWatchOnly, avoidReuse, withTokens);
+        public decimal GetBalance(int minconf, bool includeWatchOnly, bool avoidReuse)
+            => GetBalance<decimal>(minconf, includeWatchOnly, avoidReuse, false);
+
+        public BalancesWithTokens GetBalanceWithTokens(int minconf, bool includeWatchOnly, bool avoidReuse)
+            => GetBalance<BalancesWithTokens>(minconf, includeWatchOnly, avoidReuse, true);
+
+        public BalancesWithTokens GetTokenBalances(Pagination pagination = null, bool symbolLookup = false)
+         => _rpcConnector.MakeRequest<BalancesWithTokens>("gettokenbalances", pagination ?? new object(), true, symbolLookup);
+
+        public Accounts ListAccounts(Pagination pagination = null, bool isMineOnly = true)
+            => _rpcConnector.MakeRequest<Accounts>("listaccounts", pagination ?? new object(), true/*verbose*/, true /*indexed_amounts*/, isMineOnly);
+
+        public BalancesWithTokens GetAccount(string owner, Pagination pagination = null)
+            => _rpcConnector.MakeRequest<BalancesWithTokens>("getaccount", owner, pagination ?? new object(), true/*indexed_amounts*/);
+
+        public string AccountToUtxos(string from, ToAddress to)
+             => _rpcConnector.MakeRequest<string>("accounttoutxos", from, to);
     }
 }
